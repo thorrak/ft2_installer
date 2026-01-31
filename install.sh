@@ -481,13 +481,22 @@ init_submodules() {
         return 0
     fi
 
-    # If that failed, rewrite SSH URLs to HTTPS in .gitmodules and retry
+    # If that failed, rewrite SSH URLs to HTTPS and clean up any cached state
     info "Submodule fetch failed, converting SSH URLs to HTTPS..."
+
+    # Deinitialize submodules to clear cached state
+    git submodule deinit -f --all 2>/dev/null || true
+
+    # Remove any cached submodule directories
+    rm -rf .git/modules/* 2>/dev/null || true
+
+    # Rewrite SSH URLs to HTTPS in .gitmodules
     if [[ -f .gitmodules ]]; then
         sed -i 's|git@github.com:|https://github.com/|g' .gitmodules
-        git submodule sync
     fi
 
+    # Sync and retry
+    git submodule sync
     if ! git submodule update --init --recursive; then
         error "Failed to update submodules even with HTTPS fallback."
     fi
