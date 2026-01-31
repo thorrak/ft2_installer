@@ -47,6 +47,24 @@ The installer will set up:
 
 ### Examples
 
+**Using the curl-pipe-to-bash method with flags:**
+
+```bash
+# Install with defaults
+curl -fsSL https://install_ft2.fermentrack.com | bash
+
+# Pass flags using bash -s --
+curl -fsSL https://install_ft2.fermentrack.com | bash -s -- --port 8080
+
+# Multiple flags
+curl -fsSL https://install_ft2.fermentrack.com | bash -s -- --install-dir /opt/fermentrack --multi-tenant
+
+# Unattended install (requires pre-authenticated GitHub CLI)
+curl -fsSL https://install_ft2.fermentrack.com | bash -s -- --unattended
+```
+
+**Using the local clone method:**
+
 ```bash
 # Install with defaults
 ./install.sh
