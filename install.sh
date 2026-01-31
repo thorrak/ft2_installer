@@ -481,9 +481,12 @@ init_submodules() {
         return 0
     fi
 
-    # If that failed, configure URL rewrite for this repo only and retry
-    info "Submodule fetch failed, configuring HTTPS fallback for this repository..."
-    git config url."https://github.com/".insteadOf "git@github.com:"
+    # If that failed, rewrite SSH URLs to HTTPS in .gitmodules and retry
+    info "Submodule fetch failed, converting SSH URLs to HTTPS..."
+    if [[ -f .gitmodules ]]; then
+        sed -i 's|git@github.com:|https://github.com/|g' .gitmodules
+        git submodule sync
+    fi
 
     if ! git submodule update --init --recursive; then
         error "Failed to update submodules even with HTTPS fallback."
