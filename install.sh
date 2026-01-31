@@ -595,22 +595,22 @@ configure_environment() {
     DJANGO_SECRET=$(openssl rand -base64 48)
 
     # Update .django file with generated secret
-    sed -i "s/^DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=$DJANGO_SECRET/" "$PRODUCTION_DIR/.django"
+    sed -i "s|^DJANGO_SECRET_KEY=.*|DJANGO_SECRET_KEY=$DJANGO_SECRET|" "$PRODUCTION_DIR/.django"
 
     # Generate Fernet key for django-encrypted-fields (URL-safe base64-encoded 32 bytes)
     local FERNET_KEY
     FERNET_KEY=$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')
 
     # Uncomment and set DJANGO_ENCRYPTED_FIELDS_SALT_KEY
-    sed -i "s/^# DJANGO_ENCRYPTED_FIELDS_SALT_KEY=$/DJANGO_ENCRYPTED_FIELDS_SALT_KEY=$FERNET_KEY/" "$PRODUCTION_DIR/.django"
+    sed -i "s|^# DJANGO_ENCRYPTED_FIELDS_SALT_KEY=$|DJANGO_ENCRYPTED_FIELDS_SALT_KEY=$FERNET_KEY|" "$PRODUCTION_DIR/.django"
 
     # Configure PostgreSQL credentials
     local POSTGRES_PASS
     POSTGRES_PASS=$(openssl rand -base64 32)
 
     # Update .postgres file with credentials
-    sed -i "s/^POSTGRES_USER=.*/POSTGRES_USER=fermentrack/" "$PRODUCTION_DIR/.postgres"
-    sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$POSTGRES_PASS/" "$PRODUCTION_DIR/.postgres"
+    sed -i "s|^POSTGRES_USER=.*|POSTGRES_USER=fermentrack|" "$PRODUCTION_DIR/.postgres"
+    sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$POSTGRES_PASS|" "$PRODUCTION_DIR/.postgres"
 
     # Handle multi-tenant mode
     if [[ "$MULTI_TENANT" == true ]]; then
