@@ -470,15 +470,40 @@ install_nodejs() {
     fi
 }
 
+# Helper function to initialize/update submodules with SSH->HTTPS fallback
+init_submodules() {
+    local repo_dir="$1"
+
+    cd "$repo_dir"
+
+    # First attempt: try submodule update as-is
+    if git submodule update --init --recursive 2>/dev/null; then
+        return 0
+    fi
+
+    # If that failed, configure URL rewrite for this repo only and retry
+    info "Submodule fetch failed, configuring HTTPS fallback for this repository..."
+    git config url."https://github.com/".insteadOf "git@github.com:"
+
+    if ! git submodule update --init --recursive; then
+        error "Failed to update submodules even with HTTPS fallback."
+    fi
+
+    return 0
+}
+
 # Clone or update the Fermentrack repository
 clone_or_update_repo() {
     # Scenario 1: Directory doesn't exist (fresh install)
     if [[ ! -d "$INSTALL_DIR" ]]; then
         info "Cloning Fermentrack 2 repository..."
 
-        if ! gh repo clone thorrak/fermentrack_2 "$INSTALL_DIR" -- --recurse-submodules; then
+        if ! gh repo clone thorrak/fermentrack_2 "$INSTALL_DIR"; then
             error "Failed to clone the Fermentrack 2 repository."
         fi
+
+        info "Initializing submodules..."
+        init_submodules "$INSTALL_DIR"
 
         # Verify the ui/ submodule is populated
         if [[ ! -f "$INSTALL_DIR/ui/package.json" ]]; then
@@ -517,9 +542,8 @@ clone_or_update_repo() {
         error "Failed to pull updates from the remote repository."
     fi
 
-    if ! git submodule update --init --recursive; then
-        error "Failed to update submodules."
-    fi
+    info "Updating submodules..."
+    init_submodules "$INSTALL_DIR"
 
     # Verify ui/ submodule is populated
     if [[ ! -f "$INSTALL_DIR/ui/package.json" ]]; then
