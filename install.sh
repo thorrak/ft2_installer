@@ -51,7 +51,7 @@ error() {
 INSTALL_DIR="$HOME/fermentrack_2"
 MULTI_TENANT=false
 NO_START=false
-UNATTENDED=false
+UNATTENDED=true
 PORT=80
 NO_PORT_CHECK=false
 
@@ -72,7 +72,8 @@ Options:
     --multi-tenant        Enable multi-tenant mode
     --no-start            Install but do not start the services
     --no-port-check       Skip the port availability check
-    --unattended          Run in unattended mode (no prompts)
+    --interactive         Run in interactive mode (with prompts)
+    --unattended          Run in unattended mode (default, no prompts)
     --help                Show this help message and exit
 
 Examples:
@@ -82,8 +83,8 @@ Examples:
     $(basename "$0") --install-dir /opt/fermentrack
         Install to a custom directory
 
-    $(basename "$0") --multi-tenant --unattended
-        Install in multi-tenant mode without prompts
+    $(basename "$0") --multi-tenant --interactive
+        Install in multi-tenant mode with prompts
 
 EOF
 }
@@ -119,6 +120,10 @@ parse_arguments() {
                 ;;
             --no-port-check)
                 NO_PORT_CHECK=true
+                shift
+                ;;
+            --interactive)
+                UNATTENDED=false
                 shift
                 ;;
             --unattended)
@@ -334,6 +339,11 @@ install_gh_and_auth() {
         gh auth login
         success "GitHub authentication completed"
     fi
+
+    # Set up git credential helper to use gh authentication
+    info "Configuring git to use GitHub CLI credentials..."
+    gh auth setup-git
+    success "Git credential helper configured"
 
     # Validate repository access
     info "Validating access to Fermentrack repository..."
