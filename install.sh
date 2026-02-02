@@ -609,8 +609,8 @@ configure_environment() {
     POSTGRES_PASS=$(openssl rand -base64 32)
 
     # Update .postgres file with credentials
-    sed -i "s|^POSTGRES_USER=.*|POSTGRES_USER=fermentrack|" "$PRODUCTION_DIR/.postgres"
-    sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$POSTGRES_PASS|" "$PRODUCTION_DIR/.postgres"
+    sed -i "s|{{POSTGRES_USER}}|fermentrack|g" "$PRODUCTION_DIR/.postgres"
+    sed -i "s|{{POSTGRES_PASSWORD}}|$POSTGRES_PASS|g" "$PRODUCTION_DIR/.postgres"
 
     # Handle multi-tenant mode
     if [[ "$MULTI_TENANT" == true ]]; then
